@@ -25,18 +25,22 @@ create_rf_server <- function(rf, rf_name) {
       radioButtons("exp_var", label = "Term", choices = terms())
     })
 
+    output$class_checklist <- renderUI({
+      checkboxGroupInput("class_var", label = "Classes to compare", choices = classes(), selected = classes()[1])
+    })
+
     term_data <- reactive({
       original_data <- rf_data(rf)
       joined_data <- dplyr::bind_cols(original_data, as.data.frame(rf_votes))
       tidyr::gather_(joined_data,
                      key_col = "class",
-                     value_col = "certainty",
-                     gather_cols = classes())
+                     value_col = "votes",
+                     gather_cols = input$class_var)
     })
 
     output$influence_plot <- renderPlot({
       names(term_data())
-      ggplot(term_data(), aes_(x = as.name(input$exp_var), y = ~certainty, color = ~certainty)) +
+      ggplot(term_data(), aes_(x = as.name(input$exp_var), y = ~votes, color = ~votes)) +
         geom_jitter(alpha = 0.5) +
         facet_wrap(~ class)
     })
@@ -49,6 +53,7 @@ create_rf_ui <- function(rf, rf_name) {
     fluidPage(
       sidebarLayout(
         sidebarPanel(
+          uiOutput("class_checklist"),
           uiOutput("term_buttons")
         ),
         mainPanel(
