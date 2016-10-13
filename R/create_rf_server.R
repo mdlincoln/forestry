@@ -1,13 +1,6 @@
 #' @import shiny
-create_rf_app <- function(rf, rf_name) {
-  shinyApp(
-    ui = create_rf_ui(rf_name),
-    server = create_rf_server(rf))
-}
-
-#' @import shiny
 #' @import ggplot2
-create_rf_server <- function(rf, rf_name) {
+create_rf_server <- function(rf, data) {
 
   shinyServer(function(input, output, session) {
 
@@ -30,7 +23,7 @@ create_rf_server <- function(rf, rf_name) {
     })
 
     term_data <- reactive({
-      original_data <- rf_data(rf)
+      original_data <- data
       joined_data <- dplyr::bind_cols(original_data, as.data.frame(rf_votes))
       tidyr::gather_(joined_data,
                      key_col = "class",
@@ -45,21 +38,4 @@ create_rf_server <- function(rf, rf_name) {
         facet_wrap(~ class)
     })
   })
-}
-
-#' @import shiny
-create_rf_ui <- function(rf, rf_name) {
-  shinyUI(
-    fluidPage(
-      sidebarLayout(
-        sidebarPanel(
-          uiOutput("class_checklist"),
-          uiOutput("term_buttons")
-        ),
-        mainPanel(
-          plotOutput("influence_plot")
-        )
-      )
-    )
-  )
 }
