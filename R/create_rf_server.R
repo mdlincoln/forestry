@@ -22,6 +22,24 @@ create_rf_server <- function(rf, data) {
       radioButtons("secondary_exp_var", label = "Term", choices = c("(none)", terms()), selected = "(none)")
     })
 
+    is_primary_continuous <- reactive({
+      is.numeric(term_data()[[input$primary_exp_var]])
+    })
+
+    output$log_the_x <- renderUI({
+      if (is_primary_continuous()) {
+        checkboxInput("log_x_axis", "Log-transform the x-axis?", value = FALSE)
+      }
+    })
+
+    log_the_x <- reactive({
+      if (is.null(input$log_x_axis)) {
+        FALSE
+      } else {
+        input$log_x_axis
+      }
+    })
+
     output$class_checklist <- renderUI({
       checkboxGroupInput("class_var", label = "Classes to compare", choices = classes(), selected = classes()[1])
     })
@@ -37,7 +55,11 @@ create_rf_server <- function(rf, data) {
     output$influence_plot <- renderPlot({
       p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = ~votes)) +
         geom_jitter(alpha = 0.5) +
-        scale_color_continuous(guide = FALSE)
+        scale_color_continuous(guide = FALSE) +
+        theme_bw(base_size = 18)
+
+      if (log_the_x())
+        p <- p + scale_x_log10(labels = scales::comma)
 
       if (input$secondary_exp_var == "(none)") {
         p + facet_wrap("class", labeller = label_both)
