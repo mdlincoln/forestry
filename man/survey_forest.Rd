@@ -4,10 +4,17 @@
 \alias{survey_forest}
 \title{Start Shiny app to explore variable importance in a randomForest model}
 \usage{
-survey_forest(rf)
+survey_forest(rf, data = NULL)
 }
 \arguments{
 \item{rf}{A randomForest object.}
+
+\item{data}{Data used to build \code{rf}. If the original data still exists
+in \code{globalenv}, then \code{survey_forest} will locate it based on the
+call saved within \code{rf}. However, if it is not available there (if, for
+example, it has been \code{\link{remove}}d, or if the \code{randomForest}
+object has been loaded into a clean session) then the data must be passed
+explicitly.}
 }
 \value{
 A Shiny app.

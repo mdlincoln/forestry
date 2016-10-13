@@ -7,5 +7,8 @@ rf_data <- function(x) {
     data <- eval(x$call$data, parent.frame())
   }
 
+  if (is.null(data))
+    stop("Original model data cannot be recovered. Please supply origial data when calling survey_forest()")
+
   return(data)
 }
