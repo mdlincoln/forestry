@@ -14,8 +14,12 @@ create_rf_server <- function(rf, data) {
       attr(rf$terms, "term.labels")
     })
 
-    output$term_buttons <- renderUI({
-      radioButtons("exp_var", label = "Term", choices = terms())
+    output$primary_term_buttons <- renderUI({
+      radioButtons("primary_exp_var", label = "Term", choices = terms())
+    })
+
+    output$secondary_term_buttons <- renderUI({
+      radioButtons("secondary_exp_var", label = "Term", choices = c("(none)", terms()), selected = "(none)")
     })
 
     output$class_checklist <- renderUI({
@@ -23,8 +27,7 @@ create_rf_server <- function(rf, data) {
     })
 
     term_data <- reactive({
-      original_data <- data
-      joined_data <- dplyr::bind_cols(original_data, as.data.frame(rf_votes))
+      joined_data <- dplyr::bind_cols(data, as.data.frame(rf_votes))
       tidyr::gather_(joined_data,
                      key_col = "class",
                      value_col = "votes",
@@ -32,10 +35,15 @@ create_rf_server <- function(rf, data) {
     })
 
     output$influence_plot <- renderPlot({
-      names(term_data())
-      ggplot(term_data(), aes_(x = as.name(input$exp_var), y = ~votes, color = ~votes)) +
+      p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = ~votes)) +
         geom_jitter(alpha = 0.5) +
-        facet_wrap(~ class)
+        scale_color_continuous(guide = FALSE)
+
+      if (input$secondary_exp_var == "(none)") {
+        p + facet_wrap("class", labeller = label_both)
+      } else {
+        p + facet_grid(paste0(input$secondary_exp_var, " ~ class"), labeller = label_both)
+      }
     })
   })
 }
