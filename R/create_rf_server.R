@@ -61,7 +61,6 @@ create_rf_server <- function(rf, data) {
 
       p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = ~profit_type)) +
         geom_jitter(alpha = 0.5) +
-        # scale_color_continuous(guide = FALSE) +
         theme_bw(base_size = 18)
 
       if (log_the_x())
