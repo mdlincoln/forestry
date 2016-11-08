@@ -22,10 +22,6 @@ create_rf_server <- function(rf, data) {
       radioButtons("secondary_exp_var", label = "Term", choices = c("(none)", terms()), selected = "(none)")
     })
 
-    is_primary_continuous <- reactive({
-      is.numeric(term_data()[[input$primary_exp_var]])
-    })
-
     output$log_the_x <- renderUI({
       checkboxInput("log_x_axis", "Log-transform the x-axis? (ignored for categorical variables)", value = FALSE)
     })
@@ -36,10 +32,6 @@ create_rf_server <- function(rf, data) {
       } else {
         input$log_x_axis
       }
-    })
-
-    second_is_numeric <- reactive({
-      is.numeric(term_data()[[input$secondary_exp_var]])
     })
 
     output$class_checklist <- renderUI({
@@ -53,7 +45,7 @@ create_rf_server <- function(rf, data) {
                      value_col = "votes",
                      gather_cols = input$class_var)
 
-      if (input$secondary_exp_var != "(none)" & second_is_numeric()) {
+      if (input$secondary_exp_var != "(none)" & is.numeric(d[[input$secondary_exp_var]])) {
         mdots <- list(lazyeval::interp(~cut(var2, breaks = quantile(var2, probs = seq(0, 1, length.out = 5))), var2 = as.name(input$secondary_exp_var)))
         d <- dplyr::mutate_(iris, .dots = setNames(mdots, input$secondary_exp_var))
       }
@@ -61,11 +53,15 @@ create_rf_server <- function(rf, data) {
       d
     })
 
+    is_primary_continuous <- reactive({
+      is.numeric(term_data()[[input$primary_exp_var]])
+    })
+
     output$influence_plot <- renderPlot({
 
-      p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = ~votes)) +
+      p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = ~profit_type)) +
         geom_jitter(alpha = 0.5) +
-        scale_color_continuous(guide = FALSE) +
+        # scale_color_continuous(guide = FALSE) +
         theme_bw(base_size = 18)
 
       if (log_the_x())
