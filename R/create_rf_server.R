@@ -69,7 +69,7 @@ create_rf_server <- function(rf, data) {
       if (input$secondary_exp_var == "(none)") {
         p + facet_wrap("class", labeller = label_both)
       } else {
-        p + facet_grid(paste0(input$secondary_exp_var, " ~ class"), labeller = label_both)
+        p + facet_grid(c(input$secondary_exp_var, class), labeller = label_both)
       }
 
       p
