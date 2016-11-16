@@ -24,8 +24,8 @@ create_rf_server <- function(rf, data) {
       radioButtons("secondary_exp_var", label = "Term", choices = c("(none)", terms()), selected = "(none)")
     })
 
-    output$log_the_x <- renderUI({
-      checkboxInput("log_x_axis", "Log-transform the x-axis? (ignored for categorical variables)", value = FALSE)
+    observeEvent(input$primary_exp_var, {
+      updateCheckboxInput(session, "log_x_axis", value = FALSE)
     })
 
     log_the_x <- reactive({

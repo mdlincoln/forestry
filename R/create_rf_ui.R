@@ -7,7 +7,7 @@ create_rf_ui <- function(rf_name) {
         sidebarPanel(
           uiOutput("class_checklist"),
           uiOutput("primary_term_buttons"),
-          uiOutput("log_the_x"),
+          checkboxInput("log_x_axis", "Log-transform the x-axis? (ignored for categorical variables)", value = FALSE),
           uiOutput("secondary_term_buttons")
         ),
         mainPanel(
