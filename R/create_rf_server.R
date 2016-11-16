@@ -1,5 +1,7 @@
 #' @import shiny
 #' @import ggplot2
+#' @import dplyr
+#' @import tidyr
 create_rf_server <- function(rf, data) {
 
   shinyServer(function(input, output, session) {
@@ -39,15 +41,17 @@ create_rf_server <- function(rf, data) {
     })
 
     term_data <- reactive({
-      joined_data <- dplyr::bind_cols(data, as.data.frame(rf_votes))
-      d <- tidyr::gather_(joined_data,
-                     key_col = "class",
-                     value_col = "votes",
-                     gather_cols = input$class_var)
+      d <- bind_cols(data, as.data.frame(rf_votes)) %>%
+        gather_(key_col = "class",
+                value_col = "votes",
+                gather_cols = input$class_var)
 
-      if (input$secondary_exp_var != "(none)" & is.numeric(d[[input$secondary_exp_var]])) {
+      print(names(d))
+      print(input$secondary_exp_var)
+
+      if (input$secondary_exp_var != "(none)" && is.numeric(d[[input$secondary_exp_var]])) {
         mdots <- list(lazyeval::interp(~cut(var2, breaks = quantile(var2, probs = seq(0, 1, length.out = 5))), var2 = as.name(input$secondary_exp_var)))
-        d <- dplyr::mutate_(iris, .dots = setNames(mdots, input$secondary_exp_var))
+        d <- mutate_(d, .dots = setNames(mdots, input$secondary_exp_var))
       }
 
       d
@@ -59,7 +63,7 @@ create_rf_server <- function(rf, data) {
 
     output$influence_plot <- renderPlot({
 
-      p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = ~profit_type)) +
+      p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = ~class)) +
         geom_jitter(alpha = 0.5) +
         theme_bw(base_size = 18)
 
@@ -67,9 +71,10 @@ create_rf_server <- function(rf, data) {
         p <- p + scale_x_log10(labels = scales::comma)
 
       if (input$secondary_exp_var == "(none)") {
-        p + facet_wrap("class", labeller = label_both)
+        p <- p + facet_wrap(~ class, labeller = label_both)
       } else {
-        p + facet_grid(c(input$secondary_exp_var, class), labeller = label_both)
+        facet_string <- as.formula(paste0(input$secondary_exp_var, " ~ class"))
+        p <- p + facet_grid(facets = facet_string, labeller = label_both)
       }
 
       p
