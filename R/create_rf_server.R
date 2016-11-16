@@ -37,14 +37,20 @@ create_rf_server <- function(rf, data) {
     })
 
     output$class_checklist <- renderUI({
-      checkboxGroupInput("class_var", label = "Classes to compare", choices = classes(), selected = classes()[1])
+      checkboxGroupInput("class_var", label = "Actual classes to compare", choices = classes(), selected = classes()[1])
     })
 
     term_data <- reactive({
       d <- bind_cols(data, as.data.frame(rf_votes)) %>%
-        gather_(key_col = "class",
+        mutate(
+          actual = rf[["y"]],
+          predicted = rf[["predicted"]]) %>%
+        gather_(key_col = "selected_var",
                 value_col = "votes",
-                gather_cols = input$class_var)
+                gather_cols = input$class_var) %>%
+        mutate(accurate_prediction = actual == predicted)
+
+      print(d$actual == d$predicted)
 
       print(names(d))
       print(input$secondary_exp_var)
@@ -63,17 +69,18 @@ create_rf_server <- function(rf, data) {
 
     output$influence_plot <- renderPlot({
 
-      p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = ~class)) +
+      p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = ~actual)) +
         geom_jitter(alpha = 0.5) +
-        theme_bw(base_size = 18)
+        theme_bw(base_size = 18) +
+        ylim(0, 1)
 
       if (log_the_x())
         p <- p + scale_x_log10(labels = scales::comma)
 
       if (input$secondary_exp_var == "(none)") {
-        p <- p + facet_wrap(~ class, labeller = label_both)
+        p <- p
       } else {
-        facet_string <- as.formula(paste0(input$secondary_exp_var, " ~ class"))
+        facet_string <- as.formula(paste0(". ~ ", input$secondary_exp_var))
         p <- p + facet_grid(facets = facet_string, labeller = label_both)
       }
 
