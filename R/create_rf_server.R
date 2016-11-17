@@ -74,7 +74,8 @@ create_rf_server <- function(rf, data) {
         geom_jitter(alpha = 0.1) +
         geom_smooth() +
         theme_bw(base_size = 18) +
-        ylim(0, 1)
+        ylim(0, 1) +
+        labs(y = "Probability of falling to selected class")
 
       if (log_the_x())
         p <- p + scale_x_log10(labels = scales::comma)
