@@ -16,12 +16,24 @@ create_rf_server <- function(rf, data) {
       attr(rf$terms, "term.labels")
     })
 
+    continuous_terms <- reactive({
+      purrr::keep(terms(), function(x) {
+        is.numeric(data[[x]])
+      })
+    })
+
+    discrete_terms <- reactive({
+      purrr::keep(terms(), function(x) {
+        !is.numeric(data[[x]])
+      })
+    })
+
     output$primary_term_buttons <- renderUI({
-      radioButtons("primary_exp_var", label = "Term", choices = terms())
+      selectInput("primary_exp_var", label = "Term", choices = continuous_terms())
     })
 
     output$secondary_term_buttons <- renderUI({
-      radioButtons("secondary_exp_var", label = "Term", choices = c("(none)", terms()), selected = "(none)")
+      selectInput("secondary_exp_var", label = "Term", choices = c("(none)", discrete_terms()), selected = "(none)")
     })
 
     observeEvent(input$primary_exp_var, {
@@ -37,7 +49,7 @@ create_rf_server <- function(rf, data) {
     })
 
     output$class_checklist <- renderUI({
-      checkboxGroupInput("class_var", label = "Actual classes to compare", choices = classes(), selected = classes()[1])
+      selectInput("class_var", label = "Actual classes to compare", choices = classes(), selected = classes()[1])
     })
 
     term_data <- reactive({
