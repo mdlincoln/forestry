@@ -64,20 +64,20 @@ create_rf_server <- function(rf, data) {
 
     output$influence_plot <- renderPlot({
 
-      p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = ~actual)) +
-        geom_jitter(alpha = 0.5) +
+      if (input$secondary_exp_var == "(none)") {
+        p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes))
+      } else {
+        p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = as.name(input$secondary_exp_var)))
+      }
+
+      p <- p +
+        geom_jitter(alpha = 0.1) +
+        geom_smooth() +
         theme_bw(base_size = 18) +
         ylim(0, 1)
 
       if (log_the_x())
         p <- p + scale_x_log10(labels = scales::comma)
-
-      if (input$secondary_exp_var == "(none)") {
-        p <- p
-      } else {
-        facet_string <- as.formula(paste0(". ~ ", input$secondary_exp_var))
-        p <- p + facet_grid(facets = facet_string, labeller = label_both)
-      }
 
       p
     })
