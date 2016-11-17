@@ -50,11 +50,6 @@ create_rf_server <- function(rf, data) {
                 gather_cols = input$class_var) %>%
         mutate(accurate_prediction = actual == predicted)
 
-      print(d$actual == d$predicted)
-
-      print(names(d))
-      print(input$secondary_exp_var)
-
       if (input$secondary_exp_var != "(none)" && is.numeric(d[[input$secondary_exp_var]])) {
         mdots <- list(lazyeval::interp(~cut(var2, breaks = quantile(var2, probs = seq(0, 1, length.out = 5))), var2 = as.name(input$secondary_exp_var)))
         d <- mutate_(d, .dots = setNames(mdots, input$secondary_exp_var))
