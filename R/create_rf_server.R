@@ -1,7 +1,6 @@
 #' @import shiny
 #' @import ggplot2
 #' @import dplyr
-#' @import tidyr
 create_rf_server <- function(rf, data) {
 
   shinyServer(function(input, output, session) {
@@ -15,6 +14,10 @@ create_rf_server <- function(rf, data) {
     terms <- reactive({
       attr(rf$terms, "term.labels")
     })
+
+    rf_y <- rf[["y"]]
+
+    rf_predicted <- rf[["predicted"]]
 
     continuous_terms <- reactive({
       purrr::keep(terms(), function(x) {
@@ -55,12 +58,10 @@ create_rf_server <- function(rf, data) {
     term_data <- reactive({
       d <- bind_cols(data, as.data.frame(rf_votes)) %>%
         mutate(
-          actual = rf[["y"]],
-          predicted = rf[["predicted"]]) %>%
-        gather_(key_col = "selected_var",
-                value_col = "votes",
-                gather_cols = input$class_var) %>%
-        mutate(accurate_prediction = actual == predicted)
+          actual = rf_y,
+          predicted = rf_predicted,
+          accurate_prediction = actual == predicted) %>%
+        rename_(.dots = list("class_votes" = input$class_var))
 
       if (input$secondary_exp_var != "(none)" && is.numeric(d[[input$secondary_exp_var]])) {
         mdots <- list(lazyeval::interp(~cut(var2, breaks = quantile(var2, probs = seq(0, 1, length.out = 5))), var2 = as.name(input$secondary_exp_var)))
@@ -77,9 +78,10 @@ create_rf_server <- function(rf, data) {
     output$influence_plot <- renderPlot({
 
       if (input$secondary_exp_var == "(none)") {
-        p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes))
+        p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~class_votes))
       } else {
-        p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = as.name(input$secondary_exp_var)))
+        p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~class_votes, color = as.name(input$secondary_exp_var))) +
+          scale_color_brewer(type = "qual")
       }
 
       p <- p +
