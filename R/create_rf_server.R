@@ -32,11 +32,15 @@ create_rf_server <- function(rf, data) {
     })
 
     output$primary_term_buttons <- renderUI({
-      selectInput("primary_exp_var", label = "Term", choices = continuous_terms())
+      selectInput("primary_exp_var", label = "Primary Term", choices = continuous_terms())
     })
 
     output$secondary_term_buttons <- renderUI({
-      selectInput("secondary_exp_var", label = "Term", choices = c("(none)", discrete_terms()), selected = "(none)")
+      selectInput("secondary_exp_var", label = "Secondary Term (optional)", choices = c("(none)", terms()), selected = "(none)")
+    })
+
+    output$tertiary_term_buttons <- renderUI({
+      selectInput("tertiary_exp_var", label = "Tertiary Term (optional)", choices = c("(none)", terms()), selected = "(none)")
     })
 
     observeEvent(input$primary_exp_var, {
@@ -51,22 +55,34 @@ create_rf_server <- function(rf, data) {
       }
     })
 
-    output$class_checklist <- renderUI({
-      selectInput("class_var", label = "Actual classes to compare", choices = classes(), selected = classes()[1])
-    })
-
     term_data <- reactive({
       d <- bind_cols(data, as.data.frame(rf_votes)) %>%
-        mutate(
-          actual = rf_y,
-          predicted = rf_predicted,
-          accurate_prediction = actual == predicted) %>%
-        rename_(.dots = list("class_votes" = input$class_var))
+        tidyr::gather_(key_col = "predicted", value_col = "votes", gather_cols = colnames(rf_votes))
+
+      print(purrr::map(d, class))
 
       if (input$secondary_exp_var != "(none)" && is.numeric(d[[input$secondary_exp_var]])) {
-        mdots <- list(lazyeval::interp(~cut(var2, breaks = quantile(var2, probs = seq(0, 1, length.out = 5))), var2 = as.name(input$secondary_exp_var)))
+        mdots <- list(lazyeval::interp(
+          ~cut(var2, breaks = quantile(var2, probs = seq(0, 1, length.out = min(n_distinct(var2), 5)))),
+          var2 = as.name(input$secondary_exp_var)
+        ))
+
         d <- mutate_(d, .dots = setNames(mdots, input$secondary_exp_var))
+
+        print(purrr::map(d, class))
+
+        if (input$tertiary_exp_var != "(none)" && is.numeric(d[[input$tertiary_exp_var]])) {
+          mdots <- list(lazyeval::interp(
+            ~cut(var3, breaks = quantile(var3, probs = seq(0, 1, length.out = min(n_distinct(var3), 5)))),
+            var3 = as.name(input$tertiary_exp_var)
+          ))
+          d <- mutate_(d, .dots = setNames(mdots, input$tertiary_exp_var))
+
+          print(purrr::map(d, class))
+        }
       }
+
+      print(purrr::map(d, class))
 
       d
     })
@@ -77,14 +93,10 @@ create_rf_server <- function(rf, data) {
 
     output$influence_plot <- renderPlot({
 
-      if (input$secondary_exp_var == "(none)") {
-        p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~class_votes))
-      } else {
-        p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~class_votes, color = as.name(input$secondary_exp_var))) +
-          scale_color_brewer(type = "qual")
-      }
+      print(purrr::map(term_data(), class))
 
-      p <- p +
+      p <- ggplot(term_data(), aes_(x = as.name(input$primary_exp_var), y = ~votes, color = ~predicted)) +
+        scale_color_brewer(type = "qual") +
         geom_jitter(alpha = 0.1) +
         geom_smooth() +
         theme_bw(base_size = 18) +
@@ -93,6 +105,14 @@ create_rf_server <- function(rf, data) {
 
       if (log_the_x())
         p <- p + scale_x_log10(labels = scales::comma)
+
+      if (input$secondary_exp_var != "(none)") {
+        if (input$tertiary_exp_var != "(none)") {
+          p <- p + facet_grid(paste0(input$tertiary_exp_var, " ~ ", input$secondary_exp_var), labeller = label_both)
+        } else {
+          p <- p + facet_wrap(input$secondary_exp_var)
+        }
+      }
 
       p
     })
