@@ -19,7 +19,6 @@ chart_forest <- function(rf, data = NULL, var1, var2 = NULL, var3 = NULL, log_va
   p <- ggplot(harvest_forest(rf, d = data, var2, var3), aes_(x = as.name(var1), y = ~votes, color = ~predicted)) +
     scale_color_brewer(type = "qual") +
     geom_jitter(alpha = 0.1) +
-    geom_smooth() +
     theme_bw(base_size = 18) +
     ylim(0, 1) +
     labs(y = "Probability of falling to selected class")
@@ -28,10 +27,9 @@ chart_forest <- function(rf, data = NULL, var1, var2 = NULL, var3 = NULL, log_va
     p <- p + scale_x_log10(labels = scales::comma)
 
   if (var2 != "(none)") {
+      p <- p + geom_smooth(aes_(linetype = as.name(var2)))
     if (var3 != "(none)") {
-      p <- p + facet_grid(paste0(var3, " ~ ", var2), labeller = label_both)
-    } else {
-      p <- p + facet_wrap(var2)
+        p <- p + facet_wrap(var3, ncol = 1)
     }
   }
 
