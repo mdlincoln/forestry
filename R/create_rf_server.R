@@ -31,6 +31,10 @@ create_rf_server <- function(rf, data) {
       })
     })
 
+    output$class_checklist <- renderUI({
+      selectInput("class_var", label = "Prediction Class", choices = classes())
+    })
+
     output$primary_term_buttons <- renderUI({
       selectInput("primary_exp_var", label = "Primary Term", choices = continuous_terms())
     })
@@ -57,10 +61,11 @@ create_rf_server <- function(rf, data) {
 
     term_data <- reactive({
 
+      class <- input$class_var
       var2 <- ifelse(input$secondary_exp_var == "(none)", NULL, input$secondary_exp_var)
       var3 <- ifelse(input$tertiary_exp_var == "(none)", NULL, input$teriary_exp_var)
 
-      harvest_forest(rf, data, var2 = var2, var3 = var3)
+      harvest_forest(rf, data, class, var2 = var2, var3 = var3)
     })
 
     is_primary_continuous <- reactive({
@@ -68,7 +73,7 @@ create_rf_server <- function(rf, data) {
     })
 
     output$influence_plot <- renderPlot({
-      chart_forest(rf, data,
+      chart_forest(rf, data, input$class_var,
                    var1 = input$primary_exp_var,
                    var2 = input$secondary_exp_var,
                    var3 = input$tertiary_exp_var,

@@ -4,19 +4,20 @@
 #'
 #' @param rf random forest
 #' @param data Data (if not already in the environment of the random forest)
+#' @param class Which class to plot
 #' @param var1 (Required) Primary variable (preferably continuous)
 #' @param var2 Secondary variable
 #' @param var3 Teritary variable
 #' @param log_var1 Log-scale the x axis?
 #'
 #' @export
-chart_forest <- function(rf, data = NULL, var1, var2 = NULL, var3 = NULL, log_var1 = TRUE) {
+chart_forest <- function(rf, data = NULL, class, var1, var2 = NULL, var3 = NULL, log_var1 = TRUE) {
   # Use data if they have been supplied, otherwise attempt to access from the
   # model
   if (is.null(data))
     data <- rf_data(rf)
 
-  p <- ggplot(harvest_forest(rf, d = data, var2, var3), aes_(x = as.name(var1), y = ~votes, color = ~predicted)) +
+  p <- ggplot(harvest_forest(rf, d = data, class, var2, var3), aes_(x = as.name(var1), y = ~votes)) +
     scale_color_brewer(type = "qual") +
     geom_jitter(alpha = 0.1) +
     theme_bw(base_size = 18) +
@@ -27,20 +28,23 @@ chart_forest <- function(rf, data = NULL, var1, var2 = NULL, var3 = NULL, log_va
     p <- p + scale_x_log10(labels = scales::comma)
 
   if (var2 != "(none)") {
-      p <- p + geom_smooth(aes_(linetype = as.name(var2)))
+    p <- p + geom_smooth(aes_(color = as.name(var2)))
     if (var3 != "(none)") {
-        p <- p + facet_wrap(var3, ncol = 1)
+      p <- p + facet_wrap(var3, ncol = 1)
     }
+  } else {
+    p <- p + geom_smooth()
   }
 
   p
 }
 
-harvest_forest <- function(rf, d = NULL, var2 = NULL, var3 = NULL) {
+harvest_forest <- function(rf, d = NULL, class, var2 = NULL, var3 = NULL) {
   rf_votes <- rf[["votes"]]
 
   d <- bind_cols(d, as.data.frame(rf_votes)) %>%
-    tidyr::gather_(key_col = "predicted", value_col = "votes", gather_cols = colnames(rf_votes))
+    tidyr::gather_(key_col = "predicted", value_col = "votes", gather_cols = colnames(rf_votes)) %>%
+    filter(predicted == class)
 
   if (!is.null(var2) && is.numeric(d[[var2]])) {
     mdots <- list(lazyeval::interp(

@@ -4,13 +4,15 @@
 \alias{chart_forest}
 \title{Create plot of variable influence in a random forest model}
 \usage{
-chart_forest(rf, data = NULL, var1, var2 = NULL, var3 = NULL,
+chart_forest(rf, data = NULL, class, var1, var2 = NULL, var3 = NULL,
   log_var1 = TRUE)
 }
 \arguments{
 \item{rf}{random forest}
 
 \item{data}{Data (if not already in the environment of the random forest)}
+
+\item{class}{Which class to plot}
 
 \item{var1}{(Required) Primary variable (preferably continuous)}
 
