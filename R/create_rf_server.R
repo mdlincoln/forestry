@@ -12,12 +12,8 @@ create_rf_server <- function(rf, data) {
     })
 
     terms <- reactive({
-      attr(rf$terms, "term.labels")
+      rownames(rf[["importance"]])
     })
-
-    rf_y <- rf[["y"]]
-
-    rf_predicted <- rf[["predicted"]]
 
     continuous_terms <- reactive({
       purrr::keep(terms(), function(x) {
@@ -26,9 +22,9 @@ create_rf_server <- function(rf, data) {
     })
 
     discrete_terms <- reactive({
-      purrr::keep(terms(), function(x) {
-        !is.numeric(data[[x]])
-      })
+      purrr::discard(terms(), function(x) {
+        is.numeric(data[[x]])
+        })
     })
 
     output$class_checklist <- renderUI({
@@ -43,10 +39,6 @@ create_rf_server <- function(rf, data) {
       selectInput("secondary_exp_var", label = "Secondary Term (optional)", choices = c("(none)", terms()), selected = "(none)")
     })
 
-    output$tertiary_term_buttons <- renderUI({
-      selectInput("tertiary_exp_var", label = "Tertiary Term (optional)", choices = c("(none)", terms()), selected = "(none)")
-    })
-
     observeEvent(input$primary_exp_var, {
       updateCheckboxInput(session, "log_x_axis", value = FALSE)
     })
@@ -59,25 +51,27 @@ create_rf_server <- function(rf, data) {
       }
     })
 
-    term_data <- reactive({
-
-      class <- input$class_var
-      var2 <- ifelse(input$secondary_exp_var == "(none)", NULL, input$secondary_exp_var)
-      var3 <- ifelse(input$tertiary_exp_var == "(none)", NULL, input$teriary_exp_var)
-
-      harvest_forest(rf, data, class, var2 = var2, var3 = var3)
-    })
-
-    is_primary_continuous <- reactive({
-      is.numeric(term_data()[[input$primary_exp_var]])
-    })
-
     output$influence_plot <- renderPlot({
-      chart_forest(rf, data, input$class_var,
-                   var1 = input$primary_exp_var,
-                   var2 = input$secondary_exp_var,
-                   var3 = input$tertiary_exp_var,
-                   log_var1 = log_the_x())
+
+      if (input$calc == 0)
+        return()
+
+      isolate({
+
+        var1 <- input$primary_exp_var
+        if (input$secondary_exp_var == "(none)") {
+          var2 <- NULL
+        } else {
+          var2 <- input$secondary_exp_var
+        }
+
+        chart_forest(rf, data,
+                     class = input$class_var,
+                     var1 = var1,
+                     var2 = var2,
+                     log_var1 = log_the_x(),
+                     shiny_session = session)
+      })
     })
   })
 }
