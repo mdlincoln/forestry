@@ -4,8 +4,8 @@
 \alias{simulate_data}
 \title{Simulate data for partial dependence plotting}
 \usage{
-simulate_data(rf, d, class, var1, breaks1 = 50, var2 = NULL,
-  breaks2 = NULL, shiny_session = NULL, ...)
+simulate_data(rf, d, class, var1, breaks1 = 50, var2 = NULL, breaks2 = 5,
+  shiny_session = NULL, ...)
 }
 \arguments{
 \item{rf}{random forest}
