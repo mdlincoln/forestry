@@ -51,8 +51,7 @@ create_rf_server <- function(rf, data) {
       }
     })
 
-    output$influence_plot <- renderPlot({
-
+    pdp_data <- reactive({
       if (input$calc == 0)
         return()
 
@@ -65,13 +64,22 @@ create_rf_server <- function(rf, data) {
           var2 <- input$secondary_exp_var
         }
 
-        chart_forest(rf, data,
-                     class = input$class_var,
-                     var1 = var1,
-                     var2 = var2,
-                     log_var1 = log_the_x(),
-                     shiny_session = session)
+        simulate_data(rf, data,
+                      class = input$class_var,
+                      var1 = var1,
+                      var2 = var2,
+                      shiny_session = session)
       })
+    })
+
+    output$influence_plot <- renderPlot({
+      if (input$calc == 0)
+        return()
+
+      print(head(pdp_data()))
+
+      chart_forest(pdp_data(),
+                   log_var1 = log_the_x())
     })
   })
 }

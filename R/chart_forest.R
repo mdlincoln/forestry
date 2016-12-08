@@ -2,15 +2,17 @@
 #'
 #' Specify which variables to compare in the model.
 #'
-#' @inheritParams simulate_data
+#' @param sim_data Data returned from \link{simulate_data}
 #' @param log_var1 Log-scale the x axis?
 #'
 #' @export
-chart_forest <- function(rf, data, class, var1, breaks1 = NULL, var2 = NULL, breaks2 = NULL, log_var1 = TRUE, ...) {
+chart_forest <- function(sim_data, log_var1 = TRUE) {
+  #stopifnot(inherits(sim_data, "lumberjackData"))
+  varnames <- names(sim_data)[-ncol(sim_data)]
+  var1 <- varnames[1]
+  var2 <- varnames[2]
 
-  d <- simulate_data(rf, data, class, var1, breaks1, var2, breaks2, ...)
-
-  p <- ggplot(d, aes_(x = as.name(var1), y = ~preds)) +
+  p <- ggplot(sim_data, aes_(x = as.name(var1), y = ~preds)) +
     scale_color_brewer(type = "qual") +
     theme_bw(base_size = 18) +
     ylim(0, 1) +
@@ -19,7 +21,7 @@ chart_forest <- function(rf, data, class, var1, breaks1 = NULL, var2 = NULL, bre
   if (log_var1)
     p <- p + scale_x_log10(labels = scales::comma)
 
-  if (is.null(var2)) {
+  if (is.na(var2)) {
     p <- p + geom_line()
   } else {
     p <- p + geom_line(aes_(color = as.name(var2)))
@@ -45,10 +47,12 @@ chart_forest <- function(rf, data, class, var1, breaks1 = NULL, var2 = NULL, bre
 #' @export
 simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, breaks2 = NULL, shiny_session = NULL, ...) {
   if (is.null(var2)) {
-    simulate_data1(rf, d, class, var1, breaks1, ...)
+    sd <- simulate_data1(rf, d, class, var1, breaks1, ...)
   } else {
-    simulate_data2(rf, d, class, var1, breaks1, var2, breaks2, ...)
+    sd <- simulate_data2(rf, d, class, var1, breaks1, var2, breaks2, ...)
   }
+  class(sd) <- c(class(sd), "lumberjackData")
+  sd
 }
 
 simulate_data1 <- function(rf, d, class, var1, breaks1, shiny_session = NULL, ...) {

@@ -4,25 +4,10 @@
 \alias{chart_forest}
 \title{Create plot of variable influence in a random forest model}
 \usage{
-chart_forest(rf, data, class, var1, breaks1 = NULL, var2 = NULL,
-  breaks2 = NULL, log_var1 = TRUE, ...)
+chart_forest(sim_data, log_var1 = TRUE)
 }
 \arguments{
-\item{rf}{random forest}
-
-\item{data}{The data frame used to train the original forest}
-
-\item{class}{Which class to plot}
-
-\item{var1}{(Required) Primary variable (preferably continuous)}
-
-\item{breaks1}{How many values of the primary variable should be sampled when
-calculating partial dependence?}
-
-\item{var2}{Secondary variable}
-
-\item{breaks2}{If \code{var2} is numeric, in to how many categories should it
-be cut?}
+\item{sim_data}{Data returned from \link{simulate_data}}
 
 \item{log_var1}{Log-scale the x axis?}
 }
