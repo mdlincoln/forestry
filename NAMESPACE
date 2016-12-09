@@ -3,6 +3,8 @@
 export(chart_forest)
 export(simulate_data)
 export(survey_forest)
+import(doParallel)
 import(dplyr)
+import(foreach)
 import(ggplot2)
 import(shiny)

@@ -48,6 +48,9 @@ chart_forest <- function(sim_data, log_var1 = TRUE) {
 #' @param shiny_session If a Shiny \link[shiny]{session} object is passed, a
 #'   progress bar will be displayed while simulating new data.
 #'
+#' @import doParallel
+#' @import foreach
+#'
 #' @export
 simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL, shiny_session = NULL, ...) {
 
@@ -82,18 +85,20 @@ simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = 
     pb$set(message = "Simulating new data...")
   }
 
-  new_d <- purrr::map_df(combos, function(x) {
-    d[[var1]] <- x[[1]]
+  registerDoParallel(4)
+
+  new_d <- foreach(i = seq_along(combos), .combine = dplyr::bind_rows, .inorder = FALSE) %dopar% {
+    d[[var1]] <- combos[[i]][[1]]
     if (!is.null(var2))
-      d[[var2]] <- x[[2]]
+      d[[var2]] <- combos[[i]][[2]]
     if (!is.null(var3))
-      d[[var3]] <- x[[3]]
+      d[[var3]] <- combos[[i]][[3]]
     preds <- predict(rf, newdata = d, type = "prob")
-    sim_d <- data.frame(preds = mean(preds[, class]), var1 = x[[1]])
+    sim_d <- data.frame(preds = mean(preds[, class]), var1 = combos[[i]][[1]])
     if (!is.null(var2))
-      sim_d[[var2]] <- x[[2]]
+      sim_d[[var2]] <- combos[[i]][[2]]
     if (!is.null(var3))
-      sim_d[[var3]] <- x[[3]]
+      sim_d[[var3]] <- combos[[i]][[3]]
 
     names(sim_d) <- c("preds", var1, var2, var3)
 
@@ -101,7 +106,7 @@ simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = 
       pb$inc(amount = 1/length(combos))
 
     sim_d
-  })
+  }
 
   if (!is.null(var2))
     new_d[[var2]] <- as.factor(new_d[[var2]])
