@@ -9,6 +9,7 @@ create_rf_ui <- function(rf_name) {
           uiOutput("primary_term_buttons"),
           checkboxInput("log_x_axis", "Log-transform the x-axis? (ignored for categorical variables)", value = FALSE),
           uiOutput("secondary_term_buttons"),
+          uiOutput("tertiary_term_buttons"),
           actionButton("calc", "Simulate!")
         ),
         mainPanel(

@@ -39,6 +39,10 @@ create_rf_server <- function(rf, data) {
       selectInput("secondary_exp_var", label = "Secondary Term (optional)", choices = c("(none)", terms()), selected = "(none)")
     })
 
+    output$tertiary_term_buttons <- renderUI({
+      selectInput("tertiary_exp_var", label = "Tertiary Term (optional)", choices = c("(none)", terms()), selected = "(none)")
+    })
+
     observeEvent(input$primary_exp_var, {
       updateCheckboxInput(session, "log_x_axis", value = FALSE)
     })
@@ -64,10 +68,17 @@ create_rf_server <- function(rf, data) {
           var2 <- input$secondary_exp_var
         }
 
+        if (input$tertiary_exp_var == "(none)") {
+          var3 <- NULL
+        } else {
+          var3 <- input$tertiary_exp_var
+        }
+
         simulate_data(rf, data,
                       class = input$class_var,
                       var1 = var1,
                       var2 = var2,
+                      var3 = var3,
                       shiny_session = session)
       })
     })

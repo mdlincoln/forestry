@@ -4,7 +4,7 @@
 \alias{simulate_data}
 \title{Simulate data for partial dependence plotting}
 \usage{
-simulate_data(rf, d, class, var1, breaks1 = 50, var2 = NULL, breaks2 = 5,
+simulate_data(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL,
   shiny_session = NULL, ...)
 }
 \arguments{
@@ -19,13 +19,13 @@ calculating partial dependence?}
 
 \item{var2}{Secondary variable}
 
-\item{breaks2}{If \code{var2} is numeric, in to how many categories should it
-be cut?}
-
 \item{shiny_session}{If a Shiny \link[shiny]{session} object is passed, a
 progress bar will be displayed while simulating new data.}
 
 \item{data}{The data frame used to train the original forest}
+
+\item{breaks2}{If \code{var2} is numeric, in to how many categories should it
+be cut?}
 }
 \description{
 Simulate data for partial dependence plotting
