@@ -28,7 +28,7 @@ chart_forest <- function(sim_data, log_var1 = TRUE) {
   } else {
     p <- p + geom_line(aes_(color = as.name(var2)), size = 1)
     if (!is.na(var3))
-      p <- p + facet_wrap(var3)
+      p <- p + facet_wrap(var3, labeller = label_both)
   }
 
   p
