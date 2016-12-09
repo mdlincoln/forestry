@@ -76,8 +76,6 @@ create_rf_server <- function(rf, data) {
       if (input$calc == 0)
         return()
 
-      print(head(pdp_data()))
-
       chart_forest(pdp_data(),
                    log_var1 = log_the_x())
     })

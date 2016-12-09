@@ -17,10 +17,8 @@ chart_forest <- function(sim_data, log_var1 = TRUE) {
     var2 <- names(sim_data)[2]
   }
 
-  print(map(sim_data, class))
-
   p <- ggplot(sim_data, aes_(x = as.name(var1), y = ~preds)) +
-    scale_color_brewer(type = "qual") +
+    scale_color_brewer(palette = "Dark2") +
     theme_bw(base_size = 18) +
     labs(y = "Probability of falling to selected class")
 
@@ -28,9 +26,9 @@ chart_forest <- function(sim_data, log_var1 = TRUE) {
     p <- p + scale_x_log10(labels = scales::comma)
 
   if (is.null(var2)) {
-    p <- p + geom_line()
+    p <- p + geom_line(size = 1)
   } else {
-    p <- p + geom_line(aes_(color = as.name(var2)))
+    p <- p + geom_line(aes_(color = as.name(var2)), size = 1)
   }
 
   p
@@ -90,9 +88,13 @@ simulate_data1 <- function(rf, d, class, var1, breaks1, shiny_session, ...) {
 simulate_data2 <- function(rf, d, class, var1, breaks1, var2, breaks2, shiny_session) {
   sim_var1 <- quantile(d[[var1]], seq(0, 1, length.out = min(dplyr::n_distinct(d[[var1]]), breaks1)))
 
-  sim_var2 <- d[[var2]]
+  if (is.numeric(d[[var2]])) {
+    sim_var2 <- quantile(d[[var2]])
+  } else {
+    sim_var2 <- unique(d[[var2]])
+  }
 
-  combos <- purrr::cross2(sim_var1, sim_var2)
+  combos <- purrr::cross2(sim_var1, unique(sim_var2))
   print(length(combos))
 
   if (!is.null(shiny_session)) {
@@ -112,19 +114,10 @@ simulate_data2 <- function(rf, d, class, var1, breaks1, var2, breaks2, shiny_ses
     sim_d
   })
 
+  new_d[[var2]] <- as.factor(new_d[[var2]])
+
   if (exists("pb"))
     pb$close()
 
-  new_d[[var2]] <- cut(new_d[[var2]], breaks = quantile(new_d[[var2]], probs = seq(0, 1, length.out = breaks2)))
-
   new_d
-}
-
-# Utility to take a continuous variable and quantize it
-quantize_vector <- function(d, v, n_breaks) {
-  if (!is.null(v) && is.numeric(d[[v]])) {
-    cut(d[[v]], breaks = quantile(d[[v]], probs = n_breaks))
-  } else {
-    d[[v]]
-  }
 }
