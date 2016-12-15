@@ -47,12 +47,14 @@ chart_forest <- function(sim_data, log_var1 = TRUE) {
 #'   be cut?
 #' @param shiny_session If a Shiny \link[shiny]{session} object is passed, a
 #'   progress bar will be displayed while simulating new data.
+#' @param n_cores How many cores to use when calculating in parallel? Defaults
+#'   to all available cores.
 #'
 #' @import doParallel
 #' @import foreach
 #'
 #' @export
-simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL, shiny_session = NULL, ...) {
+simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL, shiny_session = NULL, n_cores = parallel::detectCores(), ...) {
 
 
   sim_var1 <- quantile(d[[var1]], seq(0, 1, length.out = min(dplyr::n_distinct(d[[var1]]), breaks1)))
@@ -85,7 +87,7 @@ simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = 
     pb$set(message = "Simulating new data...")
   }
 
-  registerDoParallel(4)
+  registerDoParallel(cores = n_cores)
 
   new_d <- foreach(i = seq_along(combos), .combine = dplyr::bind_rows, .inorder = FALSE) %dopar% {
     d[[var1]] <- combos[[i]][[1]]
