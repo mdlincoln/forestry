@@ -10,7 +10,9 @@ LazyData: true
 Imports:
     ggplot2,
     shiny,
-    purrr
+    purrr,
+    doParallel,
+    dplyr
 RoxygenNote: 5.0.1
 URL: https://github.com/mdlincoln/lumberjack
 BugReports: https://github.com/mdlincoln/lumberjack/issues

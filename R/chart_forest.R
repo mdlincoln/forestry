@@ -48,7 +48,7 @@ chart_forest <- function(sim_data, log_var1 = TRUE) {
 #' @param shiny_session If a Shiny \link[shiny]{session} object is passed, a
 #'   progress bar will be displayed while simulating new data.
 #'
-#' @import doFuture
+#' @import doParallel
 #' @import foreach
 #'
 #' @export
@@ -85,10 +85,9 @@ simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = 
     pb$set(message = "Simulating new data...")
   }
 
-  registerDoFuture()
-  plan(multisession, workers = 8)
+  registerDoParallel(4)
 
-  new_d <- foreach(i = seq_along(combos), .combine = dplyr::bind_rows, .inorder = FALSE, .export = "randomForest") %dopar% {
+  new_d <- foreach(i = seq_along(combos), .combine = dplyr::bind_rows, .inorder = FALSE) %dopar% {
     d[[var1]] <- combos[[i]][[1]]
     if (!is.null(var2))
       d[[var2]] <- combos[[i]][[2]]

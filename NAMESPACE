@@ -3,7 +3,11 @@
 export(chart_forest)
 export(simulate_data)
 export(survey_forest)
+<<<<<<< HEAD
 import(doFuture)
+=======
+import(doParallel)
+>>>>>>> 8d112a66c88b0e1b7f9a89b4de0a7c030a6fbe93
 import(dplyr)
 import(foreach)
 import(ggplot2)

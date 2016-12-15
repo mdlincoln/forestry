@@ -12,7 +12,10 @@ create_rf_server <- function(rf, data) {
     })
 
     terms <- reactive({
-      rownames(rf[["importance"]])
+      as.data.frame(rf[["importance"]]) %>%
+        rownames_to_column() %>%
+        arrange(desc(MeanDecreaseGini)) %>%
+        .$rowname
     })
 
     continuous_terms <- reactive({
