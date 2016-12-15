@@ -13,7 +13,7 @@ create_rf_server <- function(rf, data) {
 
     terms <- reactive({
       as.data.frame(rf[["importance"]]) %>%
-        rownames_to_column() %>%
+        tibble::rownames_to_column() %>%
         arrange(desc(MeanDecreaseGini)) %>%
         .$rowname
     })
