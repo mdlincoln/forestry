@@ -54,9 +54,37 @@ chart_forest <- function(sim_data, log_var1 = TRUE) {
 #' @import foreach
 #'
 #' @export
-simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL, shiny_session = NULL, n_cores = parallel::detectCores(), ...) {
+simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL, n_cores = parallel::detectCores(), ...) {
 
+  combos <- create_combos(d, var1, breaks1, var2, var3)
+  print(length(combos))
 
+  registerDoParallel(cores = n_cores)
+
+  new_d <- combo_handler(rf, d, class, combos, n_cores, var1, var2, var3)
+
+  class(new_d) <- c(class(new_d), "lumberjackData")
+  new_d
+}
+
+#' Simulate data from a list of random forests
+#' @export
+#' @inheritParams simulate_data
+list_sim_data <- function(rf, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL, n_cores = parallel::detectCores(), ...) {
+  combos <- create_combos(d = rf[[1]][["train_data"]], var1, breaks1, var2, var3)
+  print(length(combos))
+
+  registerDoParallel(cores = n_cores)
+
+  new_d <- purrr::map_df(rf, function(x) {
+    combo_handler(x[["rf"]], d = rf[[1]][["train_data"]], class, combos, n_cores, var1, var2, var3)
+  })
+
+  class(new_d) <- c(class(new_d), "lumberjackData")
+  new_d
+}
+
+create_combos <- function(d, var1, breaks1, var2, var3) {
   sim_var1 <- quantile(d[[var1]], seq(0, 1, length.out = min(dplyr::n_distinct(d[[var1]]), breaks1)))
 
   sim_var2 <- NULL
@@ -79,17 +107,11 @@ simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = 
 
   all_vars <- purrr::discard(list(sim_var1, sim_var2, sim_var3), is.null)
 
-  combos <- purrr::cross_n(all_vars)
-  print(length(combos))
+  purrr::cross_n(all_vars)
+}
 
-  if (!is.null(shiny_session)) {
-    pb <- Progress$new(shiny_session, min = 0, max = 1)
-    pb$set(message = "Simulating new data...")
-  }
-
-  registerDoParallel(cores = n_cores)
-
-  new_d <- foreach(i = seq_along(combos), .combine = dplyr::bind_rows, .inorder = FALSE) %dopar% {
+combo_handler <- function(rf, d, class, combos, n_cores, var1, var2, var3) {
+  foreach(i = seq_along(combos), .combine = dplyr::bind_rows, .inorder = FALSE) %dopar% {
     d[[var1]] <- combos[[i]][[1]]
     if (!is.null(var2))
       d[[var2]] <- combos[[i]][[2]]
@@ -104,23 +126,6 @@ simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = 
 
     names(sim_d) <- c("preds", var1, var2, var3)
 
-    if (exists("pb"))
-      pb$inc(amount = 1/length(combos))
-
     sim_d
   }
-
-  if (!is.null(var2))
-    new_d[[var2]] <- as.factor(new_d[[var2]])
-  if (!is.null(var3))
-    new_d[[var3]] <- as.factor(new_d[[var3]])
-
-  if (exists("pb"))
-    pb$close()
-
-  new_d
-
-  class(new_d) <- c(class(new_d), "lumberjackData")
-  new_d
 }
-
