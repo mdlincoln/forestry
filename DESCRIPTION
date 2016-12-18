@@ -12,7 +12,9 @@ Imports:
     shiny,
     purrr,
     doParallel,
-    dplyr
+    dplyr,
+    loggr
+Remotes: smbache/loggr
 RoxygenNote: 5.0.1
 URL: https://github.com/mdlincoln/lumberjack
 BugReports: https://github.com/mdlincoln/lumberjack/issues
