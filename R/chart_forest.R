@@ -114,21 +114,15 @@ create_combos <- function(d, var1, breaks1, var2, var3) {
   purrr::cross_n(all_vars)
 }
 
-string_levels <- function(v, nm) {
-  paste0(length(levels(v)), " levels for ", nm, ": ", paste0(levels(v), collapse = ", "))
-}
-
 combo_handler <- function(rf, d, class, combos, n_cores, var1, var2, var3) {
-  loggr::log_file(file_name = paste0(paste(var1, var2, var3, sep = "_"), ".log"), overwrite = TRUE)
   foreach(i = seq_along(combos), .combine = dplyr::bind_rows, .inorder = FALSE) %dopar% {
     d[[var1]] <- combos[[i]][[1]]
     if (!is.null(var2))
       d[[var2]] <- combos[[i]][[2]]
     if (!is.null(var3))
       d[[var3]] <- combos[[i]][[3]]
-    loggr::log_info(message = paste0(purrr::map2_chr(d, names(d), string_levels)), collapse = "; ")
     preds <- predict(rf, newdata = d, type = "prob")
-    sim_d <- data.frame(preds = mean(preds[, class]), var1 = combos[[i]][[1]])
+    sim_d <- data.frame(preds = boot::logit(mean(preds[, class])), var1 = combos[[i]][[1]])
     if (!is.null(var2))
       sim_d[[var2]] <- combos[[i]][[2]]
     if (!is.null(var3))
