@@ -5,7 +5,7 @@
 \title{Simulate data from a list of random forests}
 \usage{
 list_sim_data(rf, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL,
-  n_cores = parallel::detectCores(), ...)
+  n_cores = parallel::detectCores(), progress = interactive(), ...)
 }
 \arguments{
 \item{rf}{random forest}

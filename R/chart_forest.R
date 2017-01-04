@@ -57,7 +57,6 @@ chart_forest <- function(sim_data, log_var1 = TRUE) {
 simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL, n_cores = parallel::detectCores(), ...) {
 
   combos <- create_combos(d, var1, breaks1, var2, var3)
-  print(length(combos))
 
   registerDoParallel(cores = n_cores)
 
@@ -70,18 +69,18 @@ simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = 
 #' Simulate data from a list of random forests
 #' @export
 #' @inheritParams simulate_data
-list_sim_data <- function(rf, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL, n_cores = parallel::detectCores(), ...) {
+list_sim_data <- function(rf, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL, n_cores = parallel::detectCores(), progress = interactive(), ...) {
   combos <- create_combos(d = rf[[1]][["train_data"]], var1, breaks1, var2, var3)
-  print(length(combos))
 
   registerDoParallel(cores = n_cores)
 
-  pb <- utils::txtProgressBar(max = length(rf), title = "Simulating data...", style = 3)
+  if (progress)
+    pb <- utils::txtProgressBar(max = length(rf), title = "Simulating data...", style = 3)
   new_d <- purrr::map_df(rf, function(x) {
-    utils::setTxtProgressBar(pb, value = utils::getTxtProgressBar(pb) + 1)
+    if (exists("pb")) utils::setTxtProgressBar(pb, value = utils::getTxtProgressBar(pb) + 1)
     combo_handler(x[["rf"]], d = rf[[1]][["train_data"]], class, combos, n_cores, var1, var2, var3)
   })
-  close(pb)
+  if (exists("pb")) close(pb)
 
   class(new_d) <- c(class(new_d), "lumberjackData")
   new_d
