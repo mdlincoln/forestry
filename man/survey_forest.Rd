@@ -17,4 +17,3 @@ A Shiny app.
 \description{
 Start Shiny app to explore variable importance in a randomForest model
 }
-

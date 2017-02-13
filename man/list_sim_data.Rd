@@ -25,4 +25,3 @@ to all available cores.}
 \description{
 Simulate data from a list of random forests
 }
-

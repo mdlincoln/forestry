@@ -14,4 +14,3 @@ chart_forest(sim_data, log_var1 = TRUE)
 \description{
 Specify which variables to compare in the model.
 }
-
