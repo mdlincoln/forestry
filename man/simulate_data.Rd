@@ -10,6 +10,8 @@ simulate_data(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL,
 \arguments{
 \item{rf}{random forest}
 
+\item{d}{The data frame used to train the original forest}
+
 \item{class}{Which class to plot}
 
 \item{var1}{(Required) Primary variable (preferably continuous)}
@@ -22,8 +24,6 @@ calculating partial dependence?}
 \item{n_cores}{How many cores to use when calculating in parallel? Defaults
 to all available cores.}
 
-\item{data}{The data frame used to train the original forest}
-
 \item{breaks2}{If \code{var2} is numeric, in to how many categories should it
 be cut?}
 
@@ -33,4 +33,3 @@ progress bar will be displayed while simulating new data.}
 \description{
 Simulate data for partial dependence plotting
 }
-

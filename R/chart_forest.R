@@ -37,7 +37,7 @@ chart_forest <- function(sim_data, log_var1 = TRUE) {
 #' Simulate data for partial dependence plotting
 #'
 #' @param rf random forest
-#' @param data The data frame used to train the original forest
+#' @param d The data frame used to train the original forest
 #' @param class Which class to plot
 #' @param var1 (Required) Primary variable (preferably continuous)
 #' @param breaks1 How many values of the primary variable should be sampled when
