@@ -54,7 +54,7 @@ chart_forest <- function(sim_data, log_var1 = TRUE) {
 #' @import foreach
 #'
 #' @export
-simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, var3 = NULL, n_cores = parallel::detectCores(), ...) {
+simulate_data <- function(rf, d, class, var1, breaks1 = 50, var2 = NULL, breaks2 = 50, var3 = NULL, n_cores = parallel::detectCores(), ...) {
 
   combos <- create_combos(d, var1, breaks1, var2, var3)
 
