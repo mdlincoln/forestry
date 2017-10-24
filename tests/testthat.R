@@ -1,4 +1,4 @@
 library(testthat)
-library(lumberjack)
+library(forestry)
 
-test_check("lumberjack")
+test_check("forestry")

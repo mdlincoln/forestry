@@ -1,4 +1,4 @@
-Package: lumberjack
+Package: forestry
 Type: Package
 Title: Interactively Explore randomForest Models
 Version: 0.1.0
@@ -15,8 +15,7 @@ Imports:
     dplyr,
     boot,
     utils
-Remotes: smbache/loggr
 RoxygenNote: 6.0.1
-URL: https://github.com/mdlincoln/lumberjack
-BugReports: https://github.com/mdlincoln/lumberjack/issues
+URL: https://github.com/mdlincoln/forestry
+BugReports: https://github.com/mdlincoln/forestry/issues
 Suggests: testthat
