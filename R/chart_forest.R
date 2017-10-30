@@ -113,7 +113,7 @@ create_combos <- function(d, var1, breaks1, var2, var3) {
 
   all_vars <- purrr::discard(list(sim_var1, sim_var2, sim_var3), is.null)
 
-  purrr::cross_n(all_vars)
+  purrr::cross(all_vars)
 }
 
 combo_handler <- function(rf, d, class, combos, n_cores, var1, var2, var3) {
