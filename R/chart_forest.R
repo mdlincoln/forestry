@@ -79,7 +79,7 @@ list_sim_data <- function(rf, class, var1, breaks1 = 50, var2 = NULL, var3 = NUL
   new_d <- purrr::map_df(rf, function(x) {
     if (exists("pb")) utils::setTxtProgressBar(pb, value = utils::getTxtProgressBar(pb) + 1)
     combo_handler(x[["rf"]], d = rf[[1]][["train_data"]], class, combos, n_cores, var1, var2, var3)
-  })
+  }, .id = ".replicate")
   if (exists("pb")) close(pb)
 
   class(new_d) <- c(class(new_d), "lumberjackData")
