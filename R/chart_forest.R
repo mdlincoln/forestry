@@ -124,7 +124,7 @@ combo_handler <- function(rf, d, class, combos, n_cores, var1, var2, var3) {
     if (!is.null(var3))
       d[[var3]] <- combos[[i]][[3]]
     preds <- predict(rf, newdata = d, type = "prob")
-    sim_d <- data.frame(preds = boot::logit(mean(preds[, class])), var1 = combos[[i]][[1]])
+    sim_d <- data.frame(preds = mean(preds[, class]), var1 = combos[[i]][[1]])
     if (!is.null(var2))
       sim_d[[var2]] <- combos[[i]][[2]]
     if (!is.null(var3))
